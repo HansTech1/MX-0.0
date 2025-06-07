@@ -6,132 +6,127 @@
   <title>🎉 Fun & Image API Explorer</title>
   <style>
     body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #111;
-  color: #fefefe;
-}
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #111;
+      color: #fefefe;
+    }
 
-.container {
-  padding: 2rem;
-  max-width: 900px;
-  margin: auto;
-  text-align: center;
-}
+    .container {
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+      text-align: center;
+    }
 
-h1 {
-  color: #00ffc8;
-  margin-bottom: 2rem;
-}
+    h1 {
+      color: #00ffc8;
+      margin-bottom: 2rem;
+    }
 
-h2 {
-  color: #ffcc00;
-  margin-top: 2rem;
-}
+    h2 {
+      color: #ffcc00;
+      margin-top: 2rem;
+    }
 
-ul {
-  list-style: none;
-  padding: 0;
-}
+    ul {
+      list-style: none;
+      padding: 0;
+    }
 
-li {
-  display: inline-block;
-  margin: 0.5rem;
-}
+    li {
+      display: inline-block;
+      margin: 0.5rem;
+    }
 
-button {
-  padding: 0.6rem 1rem;
-  background: #222;
-  border: 1px solid #444;
-  color: #fff;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
+    button {
+      padding: 0.6rem 1rem;
+      background: #222;
+      border: 1px solid #444;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
 
-button:hover {
-  background: #00ffc8;
-  color: #000;
-  font-weight: bold;
-}
+    button:hover {
+      background: #00ffc8;
+      color: #000;
+      font-weight: bold;
+    }
 
-img {
-  width: 400px;
-  height: auto;
-  max-height: 400px;
-  object-fit: cover;
-  border-radius: 10px;
-  border: 2px solid #fff;
-  margin-top: 1rem;
-  box-shadow: 0 0 20px rgba(0,255,200,0.5);
-}
+    img {
+      width: 400px;
+      height: auto;
+      max-height: 400px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid #fff;
+      margin-top: 1rem;
+      box-shadow: 0 0 20px rgba(0,255,200,0.5);
+    }
 
-/* Fullscreen overlay for results */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(15, 15, 15, 0.98);
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 15, 15, 0.98);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
 
-.overlay-content {
-  text-align: center;
-  padding: 2rem;
-  border-radius: 12px;
-  max-width: 90%;
-  max-height: 90%;
-  overflow-y: auto;
-}
+    .overlay-content {
+      text-align: center;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 90%;
+      max-height: 90%;
+      overflow-y: auto;
+    }
 
-.close-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: #ff4444;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #ff4444;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
 
-.close-btn:hover {
-  background: #ff0000;
-}
+    .close-btn:hover {
+      background: #ff0000;
+    }
 
-.hidden {
-  display: none;
-}
+    .hidden {
+      display: none;
+    }
   </style>
-  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h1>🎭 Welcome to the Fun & Image API Explorer 🚀</h1>
 
-    <section>
-      <h2>😂 Jest Categories</h2>
-      <ul id="jestList"></ul>
-    </section>
+    <div id="categoryButtons">
+      <button onclick="showCategory('jest', 'image')">😂 Jest</button>
+      <button onclick="showCategory('nsfw', 'image')">🔞 NSFW</button>
+      <button onclick="showCategory('fun', 'text')">🎈 Fun</button>
+    </div>
 
-    <section>
-      <h2>🔞 NSFW Categories</h2>
-      <ul id="nsfwList"></ul>
-    </section>
-
-    <section>
-      <h2>🎈 Fun Categories</h2>
-      <ul id="funList"></ul>
-    </section>
+    <div id="categoryContent" class="hidden">
+      <h2 id="categoryTitle"></h2>
+      <ul id="categoryList"></ul>
+      <button onclick="goBack()">🔙 Back</button>
+    </div>
   </div>
 
   <div id="resultOverlay" class="overlay hidden">
@@ -143,15 +138,27 @@ img {
   </div>
 
   <script>
-    async function fetchCategories(route, listId, type) {
-      const res = await fetch(`/${route}`);
+    async function showCategory(category, type) {
+      document.getElementById('categoryButtons').classList.add('hidden');
+      document.getElementById('categoryContent').classList.remove('hidden');
+      document.getElementById('categoryTitle').innerText = `📂 ${category.toUpperCase()} Endpoints`;
+
+      const res = await fetch(`/${category}`);
       const data = await res.json();
-      const list = document.getElementById(listId);
-      data.categories.forEach(category => {
-        const li = document.createElement("li");
-        li.innerHTML = `<button onclick="fetchResult('${route}/${category}', '${type}')">📥 ${category}</button>`;
+      const list = document.getElementById('categoryList');
+      list.innerHTML = '';
+
+      data.categories.forEach(endpoint => {
+        const li = document.createElement('li');
+        li.innerHTML = `<button onclick="fetchResult('${category}/${endpoint}', '${type}')">📥 ${endpoint}</button>`;
         list.appendChild(li);
       });
+    }
+
+    function goBack() {
+      document.getElementById('categoryButtons').classList.remove('hidden');
+      document.getElementById('categoryContent').classList.add('hidden');
+      document.getElementById('categoryList').innerHTML = '';
     }
 
     async function fetchResult(endpoint, type) {
@@ -172,13 +179,6 @@ img {
       document.getElementById("resultOverlay").classList.add("hidden");
       document.getElementById("resultContent").innerHTML = "";
     }
-
-    // Load categories
-    window.onload = () => {
-      fetchCategories("jest", "jestList", "image");
-      fetchCategories("nsfw", "nsfwList", "image");
-      fetchCategories("fun", "funList", "text");
-    };
   </script>
 </body>
 </html>

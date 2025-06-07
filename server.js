@@ -1,31 +1,33 @@
-const express = require('express');
+const express = require('express'); 
 const app = express();
 const path = require('path');
 const fs = require('fs');
-const port = 3000;
+const port = process.env.PORT || 3000;
+const cors = require('cors');
 
-// Serve static files from jest, nsfw, and fun folders
+// Allow CORS (frontend hosted elsewhere)
+app.use(cors());
+
+// Serve static images from jest, nsfw, fun folders
 app.use('/jest', express.static(path.join(__dirname, 'jest')));
 app.use('/nsfw', express.static(path.join(__dirname, 'nsfw')));
 app.use('/fun', express.static(path.join(__dirname, 'fun')));
 
+// Random image response function
 function serveRandomImage(folderPath, folderUrl) {
   return (req, res) => {
     const dirPath = path.join(__dirname, folderPath);
-    console.log(`Looking for images in: ${dirPath}`); // Debugging line
-
     try {
       const images = fs.readdirSync(dirPath)
-        .filter(file => /\.(jpg|jpeg|png|gif)$/i.test(file)) // Make sure to include gif files
+        .filter(file => /\.(jpg|jpeg|png|gif)$/i.test(file))
         .sort((a, b) => {
-          // Prioritize gifs over jpgs
           if (a.endsWith('.gif') && !b.endsWith('.gif')) return -1;
           if (!a.endsWith('.gif') && b.endsWith('.gif')) return 1;
           return 0;
         });
 
       if (images.length === 0) {
-        return res.status(404).send(`No images found in the "${folderUrl}" folder.`);
+        return res.status(404).send(`No images found in "${folderUrl}"`);
       }
 
       const randomImage = images[Math.floor(Math.random() * images.length)];
@@ -34,52 +36,34 @@ function serveRandomImage(folderPath, folderUrl) {
       res.json({
         success: true,
         message: "Image fetched successfully.",
-        imageUrl: imageUrl
+        imageUrl
       });
+
     } catch (err) {
-      console.error(`Error accessing ${folderUrl} folder:`, err.message);
       res.status(500).send(`Error accessing the ${folderUrl} folder.`);
     }
   };
 }
 
-// Routes for all jest categories without `/random-image`
-const jestCategories = [
-  '8ball', 'avatar', 'cuddle', 'feed', 'fox_girl', 'gasm', 'gecy', 
-  'goose', 'hug', 'kiss', 'lewd', 'lizard', 'meow', 'ngif', 'pat', 
-  'slap', 'smug', 'spank', 'tickle', 'wallpaper', 'woof'
-];
-
+// JEST Categories
+const jestCategories = ['8ball', 'avatar', 'cuddle', 'feed', 'fox_girl', 'gasm', 'gecy', 'goose', 'hug', 'kiss', 'lewd', 'lizard', 'meow', 'ngif', 'pat', 'slap', 'smug', 'spank', 'tickle', 'wallpaper', 'woof'];
 jestCategories.forEach(category => {
   app.get(`/jest/${category}`, serveRandomImage(`jest/${category}`, `/jest/${category}`));
 });
-
-// Show available categories for /jest
 app.get('/jest', (req, res) => {
-  res.json({
-    success: true,
-    message: "Available jest categories.",
-    categories: jestCategories
-  });
+  res.json({ success: true, message: "Available jest categories.", categories: jestCategories });
 });
 
-// Routes for all nsfw categories without `/random-image`
+// NSFW Categories
 const nsfwCategories = ['neko', 'waifu', 'shemale', 'blowjob'];
-
 nsfwCategories.forEach(category => {
   app.get(`/nsfw/${category}`, serveRandomImage(`nsfw/${category}`, `/nsfw/${category}`));
 });
-
-// Show available categories for /nsfw
 app.get('/nsfw', (req, res) => {
-  res.json({
-    success: true,
-    message: "Available nsfw categories.",
-    categories: nsfwCategories
-  });
+  res.json({ success: true, message: "Available nsfw categories.", categories: nsfwCategories });
 });
 
-// Import the categories from the fun folder
+// FUN Categories
 const jokes = require('./fun/joke');
 const facts = require('./fun/fact');
 const quotes = require('./fun/quote');
@@ -96,7 +80,6 @@ const limericks = require('./fun/limericks');
 const pickuplines = require('./fun/pickuplines');
 const puns = require('./fun/puns');
 
-// Dynamic routes for fun folder categories
 const funCategories = {
   joke: jokes,
   fact: facts,
@@ -125,22 +108,16 @@ Object.entries(funCategories).forEach(([key, values]) => {
     });
   });
 });
-
-// Show available categories for /fun
 app.get('/fun', (req, res) => {
-  res.json({
-    success: true,
-    message: "Available fun categories.",
-    categories: Object.keys(funCategories)
-  });
+  res.json({ success: true, message: "Available fun categories.", categories: Object.keys(funCategories) });
 });
 
-// Serve the index.html file on the root URL
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+// Catch-all for unknown routes
+app.use((req, res) => {
+  res.status(404).json({ error: "Endpoint not found." });
 });
 
-// Start the server
+// Start server
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`✅ API-only server running on http://localhost:${port}`);
 });

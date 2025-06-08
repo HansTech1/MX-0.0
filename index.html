@@ -1,85 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🧠 API Explorer</title>
   <style>
+    /* Gradient background with a smooth blue-red-pink-purple theme */
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 20px;
-      background: #f9f9f9;
+      background: linear-gradient(135deg, #3b82f6, #ec4899, #8b5cf6, #f43f5e);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    @keyframes gradientBG {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
     .container {
-      max-width: 600px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 650px;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      padding: 25px 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
     }
 
-    h1, h2 {
+    h1,
+    h2 {
       text-align: center;
+      font-weight: 700;
+      margin-bottom: 20px;
+      letter-spacing: 1.5px;
     }
 
     button {
-      display: inline-block;
-      padding: 12px 20px;
-      font-size: 16px;
-      margin: 10px 5px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background-color: #007BFF;
+      display: block;
+      width: 100%;
+      background: #8b5cf6;
       color: white;
-      transition: background-color 0.2s ease;
+      font-size: 16px;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 15px;
+      text-align: left;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 3px 8px rgba(139, 92, 246, 0.6);
+      font-weight: 600;
     }
 
     button:hover {
-      background-color: #0056b3;
-    }
-
-    #endpoints button {
-      display: block;
-      width: 100%;
-      margin: 10px 0;
-      text-align: left;
-      background-color: #17a2b8;
-    }
-
-    #endpoints button:hover {
-      background-color: #117a8b;
+      background: #ec4899;
+      transform: translateX(8px);
+      box-shadow: 0 5px 12px rgba(236, 72, 153, 0.8);
     }
 
     .back-btn {
-      background-color: #6c757d;
+      background: #3b82f6;
+      margin-top: 15px;
+      text-align: center;
+      font-weight: 700;
+      box-shadow: 0 3px 8px rgba(59, 130, 246, 0.6);
     }
 
     .back-btn:hover {
-      background-color: #5a6268;
+      background: #2563eb;
+      box-shadow: 0 5px 12px rgba(37, 99, 235, 0.8);
+      transform: translateX(0);
     }
 
     #resultContainer {
       white-space: pre-wrap;
-      background-color: #f1f1f1;
-      padding: 15px;
-      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.12);
+      padding: 18px 20px;
+      border-radius: 12px;
       margin-top: 20px;
+      font-family: 'Courier New', Courier, monospace;
+      max-height: 350px;
+      overflow-y: auto;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+    .endpoint-info {
+      font-size: 13px;
+      color: #d8b4fe;
+      margin: -12px 0 12px 10px;
       font-family: monospace;
+      user-select: all;
+    }
+
+    .endpoint-info a {
+      color: #a78bfa;
+      text-decoration: underline;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>🌌 API Explorer Interface</h1>
 
     <div id="mainMenu">
-      <button onclick="showCategory('jest')" style="display: block; width: 100%;">😂 Jest</button>
-<button onclick="showCategory('fun')" style="display: block; width: 100%;">🎉 Fun</button>
-<button onclick="showCategory('nsfw')" style="display: block; width: 100%;">🔞 NSFW</button>
+      <button onclick="showCategory('jest')">😂 Jest</button>
+      <button onclick="showCategory('fun')">🎉 Fun</button>
+      <button onclick="showCategory('nsfw')">🔞 NSFW</button>
     </div>
 
     <div id="categoryMenu" style="display:none;">
@@ -98,17 +142,36 @@
       document.getElementById('resultContainer').style.display = 'none';
       document.getElementById('categoryTitle').innerText = `📁 ${category.toUpperCase()} Endpoints`;
 
-      const res = await fetch(`/${category}`);
-      const data = await res.json();
+      try {
+        const res = await fetch(`/${category}`);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
 
-      const endpointsDiv = document.getElementById('endpoints');
-      endpointsDiv.innerHTML = '';
-      data.categories.forEach(endpoint => {
-        const btn = document.createElement('button');
-        btn.textContent = `📥 ${endpoint}`;
-        btn.onclick = () => fetchAndShowResult(`${category}/${endpoint}`);
-        endpointsDiv.appendChild(btn);
-      });
+        const endpointsDiv = document.getElementById('endpoints');
+        endpointsDiv.innerHTML = '';
+
+        data.categories.forEach(endpoint => {
+          const btn = document.createElement('button');
+          btn.textContent = `📥 ${endpoint}`;
+          btn.onclick = () => fetchAndShowResult(`${category}/${endpoint}`);
+
+          endpointsDiv.appendChild(btn);
+
+          // Show example request and direct link below each button
+          const info = document.createElement('div');
+          info.className = 'endpoint-info';
+
+          const url = `${window.location.origin}/${category}/${endpoint}`;
+          info.innerHTML = `
+            Example GET: <code>curl ${url}</code><br/>
+            Direct link: <a href="${url}" target="_blank" rel="noopener">${url}</a>
+          `;
+          endpointsDiv.appendChild(info);
+        });
+
+      } catch (err) {
+        alert("Failed to load category endpoints: " + err.message);
+      }
     }
 
     function goBack() {
@@ -118,14 +181,20 @@
     }
 
     async function fetchAndShowResult(endpoint) {
-      const res = await fetch(`/${endpoint}`);
-      const data = await res.json();
+      try {
+        const res = await fetch(`/${endpoint}`);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
 
-      document.getElementById('categoryMenu').style.display = 'none';
-      const resultDiv = document.getElementById('resultContainer');
-      resultDiv.style.display = 'block';
-      resultDiv.innerText = JSON.stringify(data, null, 2);
+        document.getElementById('categoryMenu').style.display = 'none';
+        const resultDiv = document.getElementById('resultContainer');
+        resultDiv.style.display = 'block';
+        resultDiv.innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        alert("Failed to load endpoint result: " + err.message);
+      }
     }
   </script>
 </body>
+
 </html>

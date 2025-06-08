@@ -1,57 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🧠 API Explorer</title>
+  <title>🌌 API Explorer Interface</title>
   <style>
-    /* Gradient background with a smooth blue-red-pink-purple theme */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 20px;
+      margin: 0; padding: 20px;
       background: linear-gradient(135deg, #3b82f6, #ec4899, #8b5cf6, #f43f5e);
       background-size: 400% 400%;
       animation: gradientBG 15s ease infinite;
       color: #fff;
       min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
+      display: flex; justify-content: center; align-items: flex-start;
     }
-
     @keyframes gradientBG {
-      0% {
-        background-position: 0% 50%;
-      }
-
-      50% {
-        background-position: 100% 50%;
-      }
-
-      100% {
-        background-position: 0% 50%;
-      }
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
     }
-
     .container {
       max-width: 650px;
       width: 100%;
-      background: rgba(0, 0, 0, 0.65);
+      background: rgba(0,0,0,0.65);
       padding: 25px 30px;
       border-radius: 16px;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 20px rgba(255,255,255,0.15);
     }
-
-    h1,
-    h2 {
+    h1, h2 {
       text-align: center;
       font-weight: 700;
       margin-bottom: 20px;
       letter-spacing: 1.5px;
     }
-
     button {
       display: block;
       width: 100%;
@@ -65,81 +47,87 @@
       margin-bottom: 15px;
       text-align: left;
       transition: background-color 0.3s ease, transform 0.2s ease;
-      box-shadow: 0 3px 8px rgba(139, 92, 246, 0.6);
+      box-shadow: 0 3px 8px rgba(139,92,246,0.6);
       font-weight: 600;
     }
-
     button:hover {
       background: #ec4899;
       transform: translateX(8px);
-      box-shadow: 0 5px 12px rgba(236, 72, 153, 0.8);
+      box-shadow: 0 5px 12px rgba(236,72,153,0.8);
     }
-
     .back-btn {
       background: #3b82f6;
       margin-top: 15px;
       text-align: center;
       font-weight: 700;
-      box-shadow: 0 3px 8px rgba(59, 130, 246, 0.6);
+      box-shadow: 0 3px 8px rgba(59,130,246,0.6);
     }
-
     .back-btn:hover {
       background: #2563eb;
-      box-shadow: 0 5px 12px rgba(37, 99, 235, 0.8);
+      box-shadow: 0 5px 12px rgba(37,99,235,0.8);
       transform: translateX(0);
     }
-
     #resultContainer {
       white-space: pre-wrap;
-      background-color: rgba(255, 255, 255, 0.12);
+      background-color: rgba(255,255,255,0.12);
       padding: 18px 20px;
       border-radius: 12px;
       margin-top: 20px;
       font-family: 'Courier New', Courier, monospace;
       max-height: 350px;
       overflow-y: auto;
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 15px rgba(255,255,255,0.2);
     }
-
     .endpoint-info {
-      font-size: 13px;
+      font-size: 14px;
       color: #d8b4fe;
-      margin: -12px 0 12px 10px;
+      margin-top: 15px;
       font-family: monospace;
       user-select: all;
     }
-
     .endpoint-info a {
       color: #a78bfa;
       text-decoration: underline;
     }
   </style>
 </head>
-
 <body>
   <div class="container">
     <h1>🌌 API Explorer Interface</h1>
 
+    <!-- Main Menu -->
     <div id="mainMenu">
       <button onclick="showCategory('jest')">😂 Jest</button>
       <button onclick="showCategory('fun')">🎉 Fun</button>
       <button onclick="showCategory('nsfw')">🔞 NSFW</button>
     </div>
 
+    <!-- Category Menu -->
     <div id="categoryMenu" style="display:none;">
       <h2 id="categoryTitle"></h2>
       <div id="endpoints"></div>
-      <button class="back-btn" onclick="goBack()">🔙 Back</button>
+      <button class="back-btn" onclick="backToMain()">🔙 Back to Categories</button>
     </div>
 
-    <div id="resultContainer" style="display:none;"></div>
+    <!-- Result View -->
+    <div id="resultView" style="display:none;">
+      <h2 id="resultTitle"></h2>
+      <div id="resultContainer"></div>
+      <div class="endpoint-info" id="endpointInfo"></div>
+      <button class="back-btn" onclick="backToCategory()">🔙 Back to Endpoints</button>
+    </div>
   </div>
 
   <script>
+    let currentCategory = '';
+    let currentEndpoint = '';
+
     async function showCategory(category) {
+      currentCategory = category;
+      currentEndpoint = '';
       document.getElementById('mainMenu').style.display = 'none';
+      document.getElementById('resultView').style.display = 'none';
       document.getElementById('categoryMenu').style.display = 'block';
-      document.getElementById('resultContainer').style.display = 'none';
       document.getElementById('categoryTitle').innerText = `📁 ${category.toUpperCase()} Endpoints`;
 
       try {
@@ -153,20 +141,8 @@
         data.categories.forEach(endpoint => {
           const btn = document.createElement('button');
           btn.textContent = `📥 ${endpoint}`;
-          btn.onclick = () => fetchAndShowResult(`${category}/${endpoint}`);
-
+          btn.onclick = () => fetchAndShowResult(`${category}/${endpoint}`, category, endpoint);
           endpointsDiv.appendChild(btn);
-
-          // Show example request and direct link below each button
-          const info = document.createElement('div');
-          info.className = 'endpoint-info';
-
-          const url = `${window.location.origin}/${category}/${endpoint}`;
-          info.innerHTML = `
-            Example GET: <code>curl ${url}</code><br/>
-            Direct link: <a href="${url}" target="_blank" rel="noopener">${url}</a>
-          `;
-          endpointsDiv.appendChild(info);
         });
 
       } catch (err) {
@@ -174,27 +150,54 @@
       }
     }
 
-    function goBack() {
-      document.getElementById('mainMenu').style.display = 'block';
-      document.getElementById('categoryMenu').style.display = 'none';
-      document.getElementById('resultContainer').style.display = 'none';
-    }
+    async function fetchAndShowResult(endpointPath, category, endpoint) {
+      currentCategory = category;
+      currentEndpoint = endpoint;
 
-    async function fetchAndShowResult(endpoint) {
       try {
-        const res = await fetch(`/${endpoint}`);
+        const res = await fetch(`/${endpointPath}`);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
 
         document.getElementById('categoryMenu').style.display = 'none';
-        const resultDiv = document.getElementById('resultContainer');
-        resultDiv.style.display = 'block';
-        resultDiv.innerText = JSON.stringify(data, null, 2);
+        document.getElementById('mainMenu').style.display = 'none';
+
+        // Show result view
+        document.getElementById('resultView').style.display = 'block';
+        document.getElementById('resultTitle').innerText = `🧾 Result for /${category}/${endpoint}`;
+
+        // Show pretty JSON result
+        document.getElementById('resultContainer').innerText = JSON.stringify(data, null, 2);
+
+        // Show example GET and direct link
+        const url = `${window.location.origin}/${category}/${endpoint}`;
+        document.getElementById('endpointInfo').innerHTML = `
+          Example GET: <code>curl ${url}</code><br/>
+          Direct link: <a href="${url}" target="_blank" rel="noopener">${url}</a>
+        `;
+
       } catch (err) {
         alert("Failed to load endpoint result: " + err.message);
       }
     }
+
+    function backToMain() {
+      currentCategory = '';
+      currentEndpoint = '';
+      document.getElementById('mainMenu').style.display = 'block';
+      document.getElementById('categoryMenu').style.display = 'none';
+      document.getElementById('resultView').style.display = 'none';
+    }
+
+    function backToCategory() {
+      if (currentCategory) {
+        document.getElementById('mainMenu').style.display = 'none';
+        document.getElementById('categoryMenu').style.display = 'block';
+        document.getElementById('resultView').style.display = 'none';
+      } else {
+        backToMain();
+      }
+    }
   </script>
 </body>
-
 </html>
